@@ -41,8 +41,8 @@ class UserManager {
                                     return
                                 }
                                 
-                                let articleData = response.result.value!
-                                completionHandler(articleData, status!)
+                                let userData = response.result.value!
+                                completionHandler(userData, status!)
                             case .failure(let error):
                                 guard status == nil else {
                                     log.debug("Request failure with status code: \(status!)")

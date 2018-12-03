@@ -13,8 +13,8 @@ class UserTableViewCell: UITableViewCell {
     @IBOutlet weak var usernameLabel: UILabel!
     @IBOutlet weak var userUrlLabel: UILabel!
     @IBOutlet weak var userImageView: UIImageView!
-    @IBOutlet weak var userCheckBoxButton: UIButton!
-    
+    @IBOutlet weak var userCheckmarkButton: UIButton!
+   
     override func awakeFromNib() {
         super.awakeFromNib()
     }
@@ -22,5 +22,4 @@ class UserTableViewCell: UITableViewCell {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }
-
 }
