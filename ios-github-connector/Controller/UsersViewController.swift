@@ -12,8 +12,8 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
 
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var tableView: UITableView!
-    
     @IBOutlet weak var noUsersSelecedLabel: UILabel!
+    
     var limit = 10
     var isSelectedCell = false
     var usersList: [User]?
@@ -23,7 +23,7 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//        collectionView.isHidden = true
+        collectionView.isHidden = true
         noUsersSelecedLabel.isHidden = false
         getAllUsers()
         tableView.delegate = self
@@ -31,12 +31,7 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
         collectionView.delegate = self
         collectionView.dataSource = self
     }
-    
-//    private func setUpImageView(imageView: UIImageView) -> UIImageView {
-//        imageView.layer.cornerRadius = 100.0
-//        imageView.layer.masksToBounds = true
-//        return imageView
-//    }
+
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return usersList?.count ?? 0
@@ -56,42 +51,26 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
             cell.userCheckmarkButton.setImage(UIImage(named : "unchecked"), for: .normal)
         }
         if (user!.avatarUrl != nil) {
-            let avatarUrl = URL(string: user!.avatarUrl!)
-//            DispatchQueue.global().async {
-                let data = try? Data(contentsOf: avatarUrl!)
-//                if let data = data {
-//                    let image =
-//                    DispatchQueue.main.async {
-            cell.imageView!.image = UIImage(data: data!)
-//                    }
-//                }
-//            }
+            cell.userImageView.setRounded()
+            cell.userImageView.image = stringUrlToImage(urlAsString: user!.avatarUrl!)
         }
-        
-//        cell.userCheckmarkButton.tag = indexPath.row
-//        cell.userCheckmarkButton.setImage(UIImage(named : "unchecked"), for: .normal)
-//        cell.userCheckmarkButton.setImage(UIImage(named : "checked"), for: .selected)
-//        
-//        cell.userCheckmarkButton.addTarget(self, action: #selector(userCheckmarkButtonClicked), for: .touchUpInside)
         return cell
     }
     
-//    @objc func userCheckmarkButtonClicked(sender : UIButton) {
-//        sender.isSelected = !sender.isSelected
-//    }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         isSelectedCell = true
+        collectionView.isHidden = false
         let cell = tableView.cellForRow(at: indexPath) as! UserTableViewCell
         if (isSelectedCell) {
+            let selectedUser = usersList?[indexPath.row]
+            selectedUsersList?.append(selectedUser!)
             cell.userCheckmarkButton.setImage(UIImage(named : "checked"), for: .normal)
         }
         log.debug("selected \(self.usersList![indexPath.row])")
         isSelectedCell = false
-//        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-//        let cell = tableView.cellForRow(at: indexPath) as! UserTableViewCell
         isSelectedCell = false
         let cell = tableView.cellForRow(at: indexPath) as! UserTableViewCell
         if (!isSelectedCell) {
@@ -110,6 +89,7 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        collectionView.isHidden = false
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SelectedUserCollectionViewCell", for: indexPath) as! SelectedUserCollectionViewCell
         let selectedUser = selectedUsersList?[indexPath.item]
         if (selectedUser == nil) {
@@ -118,9 +98,8 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
             noUsersSelecedLabel.isHidden = true
             cell.selectedUserLabel.text = selectedUser!.username
             if(selectedUser?.avatarUrl != nil) {
-                let avatarUrl = URL(string: selectedUser!.avatarUrl!)
-                let data = try? Data(contentsOf: avatarUrl!)
-                cell.selectedUserImageView!.image = UIImage(data: data!)
+                cell.selectedUserImageView.setRounded()
+                cell.selectedUserImageView!.image = stringUrlToImage(urlAsString: selectedUser!.avatarUrl!)
             }
         }
         return cell
@@ -142,6 +121,13 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
                 self.alertSetUp.showAlertAccordingToStatusCode(fromController: self, statusCode: status!)
             }
         })
+    }
+    
+    private func stringUrlToImage(urlAsString: String) -> UIImage {
+        let url = URL(string: urlAsString)
+        let data = try? Data(contentsOf: url!)
+        let image = UIImage(data: data!)
+        return image!
     }
 }
 
