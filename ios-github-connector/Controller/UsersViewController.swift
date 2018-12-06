@@ -18,12 +18,14 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
     var isSelectedCell = false
     var usersList: [User]?
     var selectedUsersList: [User]?
+    var tmpList = ["username", "username", "username"]
     let userManager = UserManager()
     let alertSetUp = AlertSetUp()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        collectionView.isHidden = true
+        setUpNextBarButton()
+        self.navigationItem.rightBarButtonItem?.isEnabled = false
         noUsersSelecedLabel.isHidden = false
         getAllUsers()
         tableView.delegate = self
@@ -32,6 +34,14 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
         collectionView.dataSource = self
     }
 
+    private func setUpNextBarButton() {
+        let nextBarButtonItem = UIBarButtonItem(title: "Next", style: .done, target: self, action: #selector(goNextByUserTapped))
+        self.navigationItem.rightBarButtonItem  = nextBarButtonItem
+    }
+    
+    @objc func goNextByUserTapped(sender: AnyObject) {
+        log.debug("Next button tapped.")
+    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return usersList?.count ?? 0
@@ -59,12 +69,13 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         isSelectedCell = true
-        collectionView.isHidden = false
         let cell = tableView.cellForRow(at: indexPath) as! UserTableViewCell
         if (isSelectedCell) {
+            self.navigationItem.rightBarButtonItem?.isEnabled = true
             let selectedUser = usersList?[indexPath.row]
             selectedUsersList?.append(selectedUser!)
             cell.userCheckmarkButton.setImage(UIImage(named : "checked"), for: .normal)
+//            self.collectionView.reloadData()
         }
         log.debug("selected \(self.usersList![indexPath.row])")
         isSelectedCell = false
@@ -75,6 +86,7 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let cell = tableView.cellForRow(at: indexPath) as! UserTableViewCell
         if (!isSelectedCell) {
             cell.userCheckmarkButton.setImage(UIImage(named : "unchecked"), for: .normal)
+//            self.collectionView.reloadData()
         }
         log.debug("deselected \(self.usersList![indexPath.row])")
     }
@@ -84,24 +96,26 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return CGFloat(70)
     }
     
+    //TODO: When collection view is empty -- Next bar button need to be disable
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return selectedUsersList?.count ?? 0
+//        return selectedUsersList?.count ?? 0
+        return tmpList.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        collectionView.isHidden = false
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SelectedUserCollectionViewCell", for: indexPath) as! SelectedUserCollectionViewCell
-        let selectedUser = selectedUsersList?[indexPath.item]
-        if (selectedUser == nil) {
-            noUsersSelecedLabel.isHidden = false
-        } else {
+//        let selectedUser = selectedUsersList?[indexPath.row]
+//        if (tmpList == nil) {
+//            noUsersSelecedLabel.isHidden = false
+//        } else {
             noUsersSelecedLabel.isHidden = true
-            cell.selectedUserLabel.text = selectedUser!.username
-            if(selectedUser?.avatarUrl != nil) {
-                cell.selectedUserImageView.setRounded()
-                cell.selectedUserImageView!.image = stringUrlToImage(urlAsString: selectedUser!.avatarUrl!)
-            }
-        }
+//            cell.selectedUserLabel.text = selectedUser!.username
+            cell.selectedUserLabel.text = tmpList[indexPath.row]
+//            if(selectedUser?.avatarUrl != nil) {
+//                cell.selectedUserImageView.setRounded()
+//                cell.selectedUserImageView!.image = stringUrlToImage(urlAsString: selectedUser!.avatarUrl!)
+//            }
+//        }
         return cell
     }
     
