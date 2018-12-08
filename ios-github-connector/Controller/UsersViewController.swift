@@ -14,11 +14,9 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var noUsersSelecedLabel: UILabel!
     
-    var limit = 10
     var isSelectedCell = false
     var usersList: [User]?
-    var selectedUsersList: [User]?
-    var tmpList = ["username", "username", "username"]
+    var selectedUsersList: [User] = []
     let userManager = UserManager()
     let alertSetUp = AlertSetUp()
     
@@ -72,13 +70,13 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let cell = tableView.cellForRow(at: indexPath) as! UserTableViewCell
         if (isSelectedCell) {
             self.navigationItem.rightBarButtonItem?.isEnabled = true
-            let selectedUser = usersList?[indexPath.row]
-            selectedUsersList?.append(selectedUser!)
+            let selectedUser = self.usersList?[indexPath.row]
+            selectedUsersList.append(selectedUser!)
             cell.userCheckmarkButton.setImage(UIImage(named : "checked"), for: .normal)
-//            self.collectionView.reloadData()
         }
         log.debug("selected \(self.usersList![indexPath.row])")
         isSelectedCell = false
+        collectionView.reloadData()
     }
     
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
@@ -86,7 +84,12 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
         let cell = tableView.cellForRow(at: indexPath) as! UserTableViewCell
         if (!isSelectedCell) {
             cell.userCheckmarkButton.setImage(UIImage(named : "unchecked"), for: .normal)
-//            self.collectionView.reloadData()
+            selectedUsersList.remove(at: indexPath.row)
+            if (selectedUsersList.isEmpty) {
+                noUsersSelecedLabel.isHidden = false
+                self.navigationItem.rightBarButtonItem?.isEnabled = false
+            }
+             collectionView.reloadData()
         }
         log.debug("deselected \(self.usersList![indexPath.row])")
     }
@@ -96,29 +99,35 @@ class UsersViewController: UIViewController, UITableViewDelegate, UITableViewDat
         return CGFloat(70)
     }
     
-    //TODO: When collection view is empty -- Next bar button need to be disable
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-//        return selectedUsersList?.count ?? 0
-        return tmpList.count
+        return selectedUsersList.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SelectedUserCollectionViewCell", for: indexPath) as! SelectedUserCollectionViewCell
-//        let selectedUser = selectedUsersList?[indexPath.row]
-//        if (tmpList == nil) {
-//            noUsersSelecedLabel.isHidden = false
-//        } else {
+        let selectedUser = selectedUsersList[indexPath.row]
+        if (selectedUsersList.isEmpty) {
+            noUsersSelecedLabel.isHidden = false
+            self.navigationItem.rightBarButtonItem?.isEnabled = false
+        } else {
             noUsersSelecedLabel.isHidden = true
-//            cell.selectedUserLabel.text = selectedUser!.username
-            cell.selectedUserLabel.text = tmpList[indexPath.row]
-//            if(selectedUser?.avatarUrl != nil) {
-//                cell.selectedUserImageView.setRounded()
-//                cell.selectedUserImageView!.image = stringUrlToImage(urlAsString: selectedUser!.avatarUrl!)
-//            }
-//        }
+            self.navigationItem.rightBarButtonItem?.isEnabled = true
+            cell.selectedUserLabel.text = selectedUser.username
+            if(selectedUser.avatarUrl != nil) {
+                cell.selectedUserImageView.setRounded()
+                cell.selectedUserImageView!.image = stringUrlToImage(urlAsString: selectedUser.avatarUrl!)
+            }
+            cell.deleteSelectedUserButton.tag = indexPath.row
+            cell.deleteSelectedUserButton.addTarget(self, action: #selector(deleteUserButtonClicked), for: .touchUpInside)
+        }
         return cell
     }
     
+    @IBAction func deleteUserButtonClicked(sender: UIButton) -> Void {
+        selectedUsersList.remove(at: sender.tag)
+        collectionView.reloadData()
+    }
+
     private func getAllUsers() {
         userManager.getUsers(completionHandler: { user, status in
             if (user != nil && status == 200) {
